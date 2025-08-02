@@ -1,0 +1,35 @@
+# Gradle
+.gradle
+build/
+
+# IDE
+.idea/
+*.iml
+*.ipr
+*.iws
+out/
+
+# Eclipse
+.settings/
+.classpath
+.project
+
+# NetBeans
+nbproject/private/
+build/
+dist/
+nbbuild/
+.nb-gradle/
+
+# VS Code
+.vscode/
+
+# Logs
+logs
+*.log
+
+# Other
+*.swp
+*~
+*.bak
+*.tmp

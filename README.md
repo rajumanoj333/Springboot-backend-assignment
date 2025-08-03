@@ -42,6 +42,73 @@ src/main/java/com/railse/hiring/workforcemgmt/
 │       └── enums/
 │           └── ReferenceType.java          # Reference type enum
 ```
+## Project Structure
+
+The project is organized into the following packages:
+
+*   `controller`: Contains the API endpoints that handle incoming requests.
+*   `service`: Holds the business logic of the application.
+*   `model`: Defines the data structures (e.g., `TaskManagement`, `Priority`).
+*   `dto`: (Data Transfer Objects) are used to shape the data for API responses.
+*   `repository`: Manages the in-memory data store.
+
+## Code Changes and Features
+
+Here's a breakdown of the key features and the code that powers them:
+
+### 1. Bug Fix: Task Re-assignment
+
+*   **The Problem:** When a task was reassigned, the old task remained, creating a duplicate.
+*   **The Fix:** The `assignByReference` method in `TaskManagementServiceImpl.java` has been updated to mark the old task as `CANCELLED`.
+
+    ```java
+    // In TaskManagementServiceImpl.java
+
+    // Find the existing task
+    List<TaskManagement> existingTasks = taskRepository.findByReferenceIdAndReferenceType(request.getReferenceId(), request.getReferenceType());
+
+    // Cancel the old task
+    for (TaskManagement task : existingTasks) {
+        task.setStatus(TaskStatus.CANCELLED);
+        taskRepository.save(task);
+    }
+
+    // Create a new task for the new assignee
+    // ...
+    ```
+
+### 2. Bug Fix: Filtering Cancelled Tasks
+
+*   **The Problem:** The API was returning cancelled tasks, cluttering the task list.
+*   **The Fix:** The `fetchTasksByDate` method in `TaskManagementServiceImpl.java` now filters out cancelled tasks.
+
+    ```java
+    // In TaskManagementServiceImpl.java
+
+    public List<TaskManagementDto> fetchTasksByDate(TaskFetchByDateRequest request) {
+        List<TaskManagement> tasks = taskRepository.findByAssigneeIdIn(request.getAssigneeIds());
+
+        List<TaskManagement> filteredTasks = tasks.stream()
+                .filter(task -> task.getStatus() != TaskStatus.CANCELLED) // Filter out cancelled tasks
+                .collect(Collectors.toList());
+
+        return taskMapper.modelListToDtoList(filteredTasks);
+    }
+    ```
+
+### 3. New Feature: Task Priority
+
+*   **What's New:** You can now set a priority (HIGH, MEDIUM, or LOW) for each task.
+*   **How it Works:**
+    *   The `TaskManagement` model now has a `priority` field.
+    *   A new endpoint `/task-mgmt/priority/{priority}` allows you to fetch all tasks of a specific priority.
+
+### 4. New Feature: Comments and Activity History
+
+*   **What's New:** You can now add comments to tasks and view a complete history of changes.
+*   **How it Works:**
+    *   The `Activity` and `Comment` models have been added to store this information.
+    *   When you fetch a single task, the API response now includes its activity history and comments.
 
 ## How to Run
 
